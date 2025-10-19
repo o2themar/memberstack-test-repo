@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Signup</title>
+</head>
+<body>
+  <main>
+    <h1>Create an account</h1>
+
+    <form action="/signup" method="POST" autocomplete="on" novalidate>
+      <fieldset>
+        <legend>Sign up</legend>
+
+        <label for="full-name">Full name</label>
+        <input id="full-name" name="fullName" type="text" placeholder="Jane Doe" required autocomplete="name" />
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" placeholder="you@example.com" required autocomplete="email" />
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" placeholder="At least 8 characters" minlength="8" required autocomplete="new-password" />
+
+        <label for="tos">
+          <input id="tos" name="tos" type="checkbox" required />
+          I agree to the terms of service
+        </label>
+
+        <button type="submit">Sign up</button>
+      </fieldset>
+    </form>
+  </main>
+</body>
+</html>
