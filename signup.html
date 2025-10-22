@@ -2,34 +2,61 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Signup</title>
+  <title>Test Signup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root { --fg:#111; --bg:#f7f7f8; --card:#fff; --muted:#6b7280; --focus:#2563eb; }
+    html,body{height:100%;}
+    body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;}
+    .wrap{min-height:100%;display:grid;place-items:center;padding:24px;}
+    .card{background:var(--card);max-width:420px;width:100%;padding:28px 24px;border-radius:16px;box-shadow:0 8px 28px rgba(0,0,0,.06);}
+    h1{margin:0 0 8px;font-size:24px;}
+    p{margin:0 0 20px;color:var(--muted);}
+    label{display:block;font-weight:600;margin:14px 0 6px;}
+    input{width:100%;padding:12px 14px;border:1px solid #e5e7eb;border-radius:10px;font-size:16px;outline:none;background:#fff;}
+    input:focus{border-color:var(--focus);box-shadow:0 0 0 3px rgba(37,99,235,.15);}
+    .row{margin-bottom:14px;}
+    .btn{display:inline-block;width:100%;margin-top:8px;padding:12px 14px;border:0;border-radius:10px;background:var(--focus);color:#fff;font-weight:700;font-size:16px;cursor:pointer;}
+    .help{margin-top:14px;color:var(--muted);font-size:13px;}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+    /* Honeypot stays hidden */
+    .hp{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;}
+  </style>
 </head>
 <body>
-  <main>
-    <h1>Create an account</h1>
+  <div class="wrap">
+    <form class="card" action="https://hook.us2.make.com/a95rdhwfru9n826kcywwn8dx4lpgjr3p" method="post" accept-charset="utf-8">
+      <h1>Create your account</h1>
+      <p>Use this page to test the Make → Airtable signup flow. After submitting, you’ll see the JSON response from Make.</p>
 
-    <form action="/signup" method="POST" autocomplete="on" novalidate>
-      <fieldset>
-        <legend>Sign up</legend>
+      <!-- Name -->
+      <div class="row">
+        <label for="Name">Full name</label>
+        <input id="Name" name="Name" type="text" placeholder="Jane Doe" autocomplete="Name" required />
+      </div>
 
-        <label for="full-name">Full name</label>
-        <input id="full-name" name="fullName" type="text" placeholder="Jane Doe" required autocomplete="name" />
+      <!-- Email -->
+      <div class="row">
+        <label for="Email">Email</label>
+        <input id="Email" name="Email" type="email" placeholder="jane@example.com" autocomplete="email" required />
+      </div>
 
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" placeholder="you@example.com" required autocomplete="email" />
+      <!-- Optional: pass a source marker so you can see in Airtable where signups came from -->
+      <input type="hidden" name="source" value="github-pages" />
 
-        <label for="password">Password</label>
-        <input id="password" name="password" type="password" placeholder="At least 8 characters" minlength="8" required autocomplete="new-password" />
+      <!-- Optional: event code if you want to reuse later -->
+      <!-- <input type="hidden" name="event_id" value="EVT-TEST-001" /> -->
 
-        <label for="tos">
-          <input id="tos" name="tos" type="checkbox" required />
-          I agree to the terms of service
-        </label>
+      <!-- Honeypot field (spam trap) -->
+      <div class="hp" aria-hidden="true">
+        <label for="company" class="sr-only">Company</label>
+        <input id="company" name="company" type="text" tabindex="-1" autocomplete="off" />
+      </div>
 
-        <button type="submit">Sign up</button>
-      </fieldset>
+      <button class="btn" type="submit">Sign up</button>
+      <div class="help">After submit, you’ll be taken to a JSON page. “Signup recorded” means the record was created; “User already exists” means your scenario matched an existing email.</div>
     </form>
-  </main>
+  </div>
 </body>
 </html>
