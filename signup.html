@@ -9,9 +9,10 @@
 </head>
 <body>
   <h1>Create account</h1>
-  <form data-ms-form="signup" data-ms-redirect="/account.html" data-ms-plan:add="FREE_PLAN_ID">
-    <label>Email<br><input type="email" name="email" required autocomplete="email"></label><br><br>
-    <label>Password<br><input type="password" name="password" required autocomplete="new-password"></label><br><br>
+    <!-- NOTE: Replace YOUR_FREE_PLAN_ID with the actual Plan ID from Memberstack Dashboard ➜ Plans ➜ (your free plan) ➜ Copy ID (e.g., plan_abc123). Without a valid ID, Memberstack will show a "broken plan button" warning. -->
+  <form data-ms-form="signup" data-ms-redirect="memberstack-test-repo/account.html" data-ms-plan:add="pln_thabaat-account-bqct06cl">
+    <label>Email<br><input type="email" name="email" data-ms-member="email" required autocomplete="email"></label><br><br>
+    <label>Password<br><input type="password" name="password" data-ms-member="password" required autocomplete="new-password"></label><br><br>
     <!-- Optional custom fields: give them your Custom Field IDs from Memberstack -->
     <!-- <input type="text" name="full_name" data-ms-member="YOUR_CUSTOM_FIELD_ID"> -->
     <button type="submit">Sign up</button>
