@@ -9,12 +9,15 @@
 </head>
 <body>
   <h1>Log in</h1>
-  <form data-ms-form="login" data-ms-redirect="memberstack-test-repo/account.html">
+  <form data-ms-form="login" data-ms-redirect="/memberstack-test-repo/account.html" method="post">
     <label>Email<br><input type="email" name="email" required autocomplete="email"></label><br><br>
     <label>Password<br><input type="password" name="password" required autocomplete="current-password"></label><br><br>
     <button type="submit">Log in</button>
   </form>
-  <p>No account? <a href="memberstack-test-repo/signup.html">Sign up</a></p>
+    <div data-ms-content="login-error" style="margin-top:12px;color:#b91c1c;">
+    <strong>Login error:</strong> <span data-ms-error="message"></span>
+  </div>
+  <p>No account? <a href="/memberstack-test-repo/signup.html">Sign up</a></p>
   <!-- Optional: add a link for passwordless/OTP if you enable it in Memberstack -->
 </body>
 </html>
