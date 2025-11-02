@@ -2,24 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>My Account</title>
+    <title>My Account & Events</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Memberstack webflow package -->
 <script data-memberstack-app="app_cmgwwkrmn00020tvugegz8x01" src="https://static.memberstack.com/scripts/v1/memberstack.js" type="text/javascript"></script>
   <style>body{font-family:system-ui;max-width:720px;margin:40px auto;padding:0 16px}</style>
 </head>
 <body>
-  <h1>Welcome <span data-ms-member="email"></span></h1>
+   <h1>My Account</h1>
+  <div id="account"></div>
 
-  <div data-ms-content="!logged-in">
-    <p>You’re not logged in. <a href="memberstack-test-repo/login">Log in</a></p>
-  </div>
+  <h2>My Events</h2>
+  <div id="events"></div>
 
-  <div data-ms-content="logged-in">
-    <p><strong>Member ID:</strong> <span data-ms-member="id"></span></p>
-    <p><strong>Signup date:</strong> <span data-ms-member="signupDate"></span></p>
-    <!-- Render custom fields: <span data-ms-member="YOUR_CUSTOM_FIELD_ID"></span> -->
-    <p><a data-ms-action="logout" href="#">Log out</a></p>
-  </div>
+  <script>
+  const API_LIST_EVENTS = "https://hook.us2.make.com/n6to8zarrq34vkmwrs2rkn9y8dklxgwx";
+  const API_MY_REGS     = "https://hook.us2.make.com/wfbbhfsn6q1c2p2uvu91uvjhgbqtvii1";
+  const API_SIGNUP      = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o";
+
+  (async function() {
+    const ms = window.MemberStack;
+    await ms.onReady;
+    const member = await ms.getMemberJSON();
+    if (!member || !member.data?.id) {
+      window.location.href = "/memberstack-test-repo/login.html";
+      return;
+    }
+    const memberId = member.data.id;
+    document.getElementById("account").innerHTML = `<div>Logged in as <strong>${member.data.email}</strong></div>`;
+
+    // Fetch events and registrations
+    const [eventsRes, regsRes] = await Promise.all([
+      fetch(API_LIST_EVENTS),
+      fetch(API_MY_REGS + "?member_id=" + encodeURIComponent(memberId))
+    ]);
+    const events = await eventsRes.json();
+    const regs = await regsRes.json();
+    const going = new Set((regs.registrations || []).map(r => r.event_id));
+
+    const list = document.getElementById("events");
+    list.innerHTML = "";
+    if (!events.length) {
+      list.textContent = "No upcoming events.";
+      return;
+    }
+
+    for (const ev of events) {
+      const div = document.createElement("div");
+      div.className = "event";
+      const isGoing = going.has(ev.id);
+      div.innerHTML = `
+        <h3>${ev.name}</h3>
+        <div class="muted">${new Date(ev.starts_at).toLocaleString()} ${ev.location ? "• " + ev.location : ""}</div>
+        <p>${ev.description || ""}</p>
+        <button class="btn" ${isGoing ? "disabled" : ""} data-event="${ev.id}">
+          ${isGoing ? "You're attending" : "Attend"}
+        </button>
+      `;
+      div.querySelector("button").addEventListener("click", async e => {
+        const btn = e.target;
+        btn.disabled = true;
+        btn.textContent = "Saving...";
+        const res = await fetch(API_SIGNUP, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ member_id: memberId, event_id: ev.id, status: "going" })
+        });
+        const j = await res.json();
+        if (res.ok && !j.error) {
+          btn.textContent = "You're attending";
+        } else {
+          alert("Error signing up: " + (j.error || res.status));
+          btn.disabled = false;
+          btn.textContent = "Attend";
+        }
+      });
+      list.appendChild(div);
+    }
+  })();
+  </script>
 </body>
 </html>

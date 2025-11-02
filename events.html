@@ -2,28 +2,47 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Events</title>
+  <title>Upcoming Events</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Memberstack webflow package -->
 <script data-memberstack-app="app_cmgwwkrmn00020tvugegz8x01" src="https://static.memberstack.com/scripts/v1/memberstack.js" type="text/javascript"></script>
   <style>body{font-family:system-ui;max-width:720px;margin:40px auto;padding:0 16px}</style>
+  <style>
+    body{font-family:system-ui;max-width:760px;margin:40px auto;padding:0 16px}
+    .event{border:1px solid #ddd;padding:12px;border-radius:8px;margin:12px 0}
+    .event h3{margin:0 0 8px}
+    .muted{color:#666}
+    .btn{cursor:pointer;border:1px solid #333;padding:6px 10px;border-radius:6px;background:#fff}
+  </style>
 </head>
 <body>
-  <h1>Events</h1>
+  <h1>Upcoming Events</h1>
+  <div id="events">Loading...</div>
 
-  <div data-ms-content="!logged-in">
-    <p>Please <a href="memberstack-test-repo/login">log in</a> or <a href="memberstack-test-repo/signup">sign up</a> to view and register for events.</p>
-  </div>
+  <script>
+  const API_LIST_EVENTS = "https://hook.us2.make.com/n6to8zarrq34vkmwrs2rkn9y8dklxgwx";
 
-  <div data-ms-content="logged-in">
-    <p>Great! You can now register with 1-click since we know who you are.</p>
-    <!-- Example register button that calls your Make webhook with member info (see next section) -->
-    <form action="https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o" method="post">
-      <input type="hidden" name="member_id" data-ms-member="id">
-      <input type="hidden" name="email" data-ms-member="email">
-      <input type="hidden" name="event_id" value="EVT-001">
-      <button type="submit">Register for Event EVT-001</button>
-    </form>
-  </div>
+  (async () => {
+    const res = await fetch(API_LIST_EVENTS);
+    const events = await res.json();
+    const list = document.getElementById("events");
+    list.innerHTML = "";
+    if (!events.length) {
+      list.textContent = "No upcoming events.";
+      return;
+    }
+    for (const ev of events) {
+      const div = document.createElement("div");
+      div.className = "event";
+      div.innerHTML = `
+        <h3>${ev.name}</h3>
+        <div class="muted">${new Date(ev.starts_at).toLocaleString()} ${ev.location ? "• " + ev.location : ""}</div>
+        <p>${ev.description || ""}</p>
+        <a href="/memberstack-test-repo/account.html?event=${ev.id}" class="btn">View / Register</a>
+      `;
+      list.appendChild(div);
+    }
+  })();
+  </script>
 </body>
 </html>
