@@ -21,6 +21,14 @@ const API_MY_REGS     = "https://hook.us2.make.com/wfbbhfsn6q1c2p2uvu91uvjhgbqtv
 const API_SIGNUP      = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o";
 
 (async function() {
+    await new Promise((resolve) => {
+        const check = () => {
+            if (window.MemberStack) resolve();
+            else setTimeout(check, 100);
+        };
+        check();
+  });
+
   const ms = window.MemberStack;
   await ms.onReady;
   const member = await ms.getMemberJSON();
