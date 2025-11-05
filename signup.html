@@ -11,6 +11,8 @@
   <h1>Create account</h1>
     <!-- NOTE: Replace YOUR_FREE_PLAN_ID with the actual Plan ID from Memberstack Dashboard ➜ Plans ➜ (your free plan) ➜ Copy ID (e.g., plan_abc123). Without a valid ID, Memberstack will show a "broken plan button" warning. -->
   <form data-ms-form="signup" data-ms-redirect="memberstack-test-repo/account" data-ms-plan:add="pln_thabaat-account-bqct06cl">
+    <label>First Name<br><input type="text" name="first_name" data-ms-member="first-name" required autocomplete="first_name"></label><br><br>
+    <label>Last Name<br><input type="text" name="last_name" data-ms-member="last-name" required autocomplete="last_name"></label><br><br>
     <label>Email<br><input type="email" name="email" data-ms-member="email" required autocomplete="email"></label><br><br>
     <label>Password<br><input type="password" name="password" data-ms-member="password" required autocomplete="new-password"></label><br><br>
     <!-- Optional custom fields: give them your Custom Field IDs from Memberstack -->
