@@ -44,7 +44,7 @@ const API_SIGNUP      = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn
   accountDiv.innerHTML = `
     <div style="border:1px solid #ddd;padding:16px;border-radius:8px;margin-bottom:24px;">
       <h2 style="margin-top:0;">Account Details</h2>
-      <p><strong>Email:</strong> ${member.email}</p>
+      <p><strong>Email:</strong> ${member.auth.email}</p>
       ${member.name ? `<p><strong>Name:</strong> ${member.name}</p>` : ""}
       <p><strong>Memberstack ID:</strong> ${member.id}</p>
       <p><strong>Plan:</strong> ${planName}</p>
