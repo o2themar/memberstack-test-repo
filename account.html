@@ -22,42 +22,37 @@ const API_MY_REGS     = "https://hook.us2.make.com/wfbbhfsn6q1c2p2uvu91uvjhgbqtv
 const API_SIGNUP      = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o";
 
 (async function() {
-    await new Promise((resolve) => {
-        const check = () => {
-            if (window.MemberStack) resolve();
-            else setTimeout(check, 100);
-        };
-        check();
+  // Wait until Memberstack DOM API is available
+  await new Promise(resolve => {
+    const check = () => window.$memberstackDom ? resolve() : setTimeout(check, 100);
+    check();
   });
 
-  const ms = window.MemberStack;
-  await ms.onReady;
-  const member = await ms.getMemberJSON();
+  const ms = window.$memberstackDom;
+  const { data: member } = await ms.getCurrentMember();
 
-  if (!member || !member.data?.id) {
+  if (!member) {
     window.location.href = "/memberstack-test-repo/login.html";
     return;
   }
 
-  const data = member.data;
-  const memberId = data.id;
-  const planName = data.planConnections?.[0]?.plan?.name || "Free plan";
+  const memberId = member.id;
+  const planName = member.planConnections?.[0]?.plan?.name || "Free plan";
 
   // 🧾 Show user info
   const accountDiv = document.getElementById("account");
   accountDiv.innerHTML = `
     <div style="border:1px solid #ddd;padding:16px;border-radius:8px;margin-bottom:24px;">
       <h2 style="margin-top:0;">Account Details</h2>
-      <p><strong>Email:</strong> ${data.email}</p>
-      ${data.name ? `<p><strong>Name:</strong> ${data.name}</p>` : ""}
-      <p><strong>Memberstack ID:</strong> ${data.id}</p>
+      <p><strong>Email:</strong> ${member.email}</p>
+      ${member.name ? `<p><strong>Name:</strong> ${member.name}</p>` : ""}
+      <p><strong>Memberstack ID:</strong> ${member.id}</p>
       <p><strong>Plan:</strong> ${planName}</p>
-      ${data.createdAt ? `<p><strong>Signup date:</strong> ${new Date(data.createdAt).toLocaleString()}</p>` : ""}
       <button id="logoutBtn" style="margin-top:10px;">Log out</button>
     </div>
   `;
 
-  // Log out button
+  // Log out
   document.getElementById("logoutBtn").addEventListener("click", async () => {
     await ms.logout();
     window.location.href = "/memberstack-test-repo/login.html";
