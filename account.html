@@ -15,71 +15,94 @@
   <h2>My Events</h2>
   <div id="events"></div>
 
-  <script>
-  const API_LIST_EVENTS = "https://hook.us2.make.com/n6to8zarrq34vkmwrs2rkn9y8dklxgwx";
-  const API_MY_REGS     = "https://hook.us2.make.com/wfbbhfsn6q1c2p2uvu91uvjhgbqtvii1";
-  const API_SIGNUP      = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o";
+ <script>
+const API_LIST_EVENTS = "https://hook.us2.make.com/n6to8zarrq34vkmwrs2rkn9y8dklxgwx";
+const API_MY_REGS     = "https://hook.us2.make.com/wfbbhfsn6q1c2p2uvu91uvjhgbqtvii1";
+const API_SIGNUP      = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o";
 
-  (async function() {
-    const ms = window.MemberStack;
-    await ms.onReady;
-    const member = await ms.getMemberJSON();
-    if (!member || !member.data?.id) {
-      window.location.href = "/memberstack-test-repo/login.html";
-      return;
-    }
-    const memberId = member.data.id;
-    document.getElementById("account").innerHTML = `<div>Logged in as <strong>${member.data.email}</strong></div>`;
+(async function() {
+  const ms = window.MemberStack;
+  await ms.onReady;
+  const member = await ms.getMemberJSON();
 
-    // Fetch events and registrations
-    const [eventsRes, regsRes] = await Promise.all([
-      fetch(API_LIST_EVENTS),
-      fetch(API_MY_REGS + "?member_id=" + encodeURIComponent(memberId))
-    ]);
-    const events = await eventsRes.json();
-    const regs = await regsRes.json();
-    const going = new Set((regs.registrations || []).map(r => r.event_id));
+  if (!member || !member.data?.id) {
+    window.location.href = "/memberstack-test-repo/login.html";
+    return;
+  }
 
-    const list = document.getElementById("events");
-    list.innerHTML = "";
-    if (!events.length) {
-      list.textContent = "No upcoming events.";
-      return;
-    }
+  const data = member.data;
+  const memberId = data.id;
+  const planName = data.planConnections?.[0]?.plan?.name || "Free plan";
 
-    for (const ev of events) {
-      const div = document.createElement("div");
-      div.className = "event";
-      const isGoing = going.has(ev.id);
-      div.innerHTML = `
-        <h3>${ev.name}</h3>
-        <div class="muted">${new Date(ev.starts_at).toLocaleString()} ${ev.location ? "• " + ev.location : ""}</div>
-        <p>${ev.description || ""}</p>
-        <button class="btn" ${isGoing ? "disabled" : ""} data-event="${ev.id}">
-          ${isGoing ? "You're attending" : "Attend"}
-        </button>
-      `;
-      div.querySelector("button").addEventListener("click", async e => {
-        const btn = e.target;
-        btn.disabled = true;
-        btn.textContent = "Saving...";
-        const res = await fetch(API_SIGNUP, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ member_id: memberId, event_id: ev.id, status: "going" })
-        });
-        const j = await res.json();
-        if (res.ok && !j.error) {
-          btn.textContent = "You're attending";
-        } else {
-          alert("Error signing up: " + (j.error || res.status));
-          btn.disabled = false;
-          btn.textContent = "Attend";
-        }
+  // 🧾 Show user info
+  const accountDiv = document.getElementById("account");
+  accountDiv.innerHTML = `
+    <div style="border:1px solid #ddd;padding:16px;border-radius:8px;margin-bottom:24px;">
+      <h2 style="margin-top:0;">Account Details</h2>
+      <p><strong>Email:</strong> ${data.email}</p>
+      ${data.name ? `<p><strong>Name:</strong> ${data.name}</p>` : ""}
+      <p><strong>Memberstack ID:</strong> ${data.id}</p>
+      <p><strong>Plan:</strong> ${planName}</p>
+      ${data.createdAt ? `<p><strong>Signup date:</strong> ${new Date(data.createdAt).toLocaleString()}</p>` : ""}
+      <button id="logoutBtn" style="margin-top:10px;">Log out</button>
+    </div>
+  `;
+
+  // Log out button
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    await ms.logout();
+    window.location.href = "/memberstack-test-repo/login.html";
+  });
+
+  // 🗓️ Fetch events and registrations
+  const [eventsRes, regsRes] = await Promise.all([
+    fetch(API_LIST_EVENTS),
+    fetch(API_MY_REGS + "?member_id=" + encodeURIComponent(memberId))
+  ]);
+  const events = await eventsRes.json();
+  const regs = await regsRes.json();
+  const going = new Set((regs.registrations || []).map(r => r.event_id));
+
+  const list = document.getElementById("events");
+  list.innerHTML = "";
+  if (!events.length) {
+    list.textContent = "No upcoming events.";
+    return;
+  }
+
+  for (const ev of events) {
+    const div = document.createElement("div");
+    div.className = "event";
+    const isGoing = going.has(ev.id);
+    div.innerHTML = `
+      <h3>${ev.name}</h3>
+      <div class="muted">${new Date(ev.starts_at).toLocaleString()} ${ev.location ? "• " + ev.location : ""}</div>
+      <p>${ev.description || ""}</p>
+      <button class="btn" ${isGoing ? "disabled" : ""} data-event="${ev.id}">
+        ${isGoing ? "You're attending" : "Attend"}
+      </button>
+    `;
+    div.querySelector("button").addEventListener("click", async e => {
+      const btn = e.target;
+      btn.disabled = true;
+      btn.textContent = "Saving...";
+      const res = await fetch(API_SIGNUP, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ member_id: memberId, event_id: ev.id, status: "going" })
       });
-      list.appendChild(div);
-    }
-  })();
-  </script>
+      const j = await res.json();
+      if (res.ok && !j.error) {
+        btn.textContent = "You're attending";
+      } else {
+        alert("Error signing up: " + (j.error || res.status));
+        btn.disabled = false;
+        btn.textContent = "Attend";
+      }
+    });
+    list.appendChild(div);
+  }
+})();
+</script>
 </body>
 </html>
