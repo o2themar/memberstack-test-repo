@@ -32,7 +32,7 @@
       list.textContent = "No upcoming events.";
       return;
     }
-    for (const ev of events) {
+    for (const ev of events.array) {
       const div = document.createElement("div");
       div.className = "event";
       div.innerHTML = `
