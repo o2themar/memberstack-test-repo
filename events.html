@@ -28,7 +28,7 @@
     const events = await res.json();
     const list = document.getElementById("events");
     list.innerHTML = "";
-    if (!events.length) {
+    if (!events.array.length) {
       list.textContent = "No upcoming events.";
       return;
     }
