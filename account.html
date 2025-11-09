@@ -69,19 +69,19 @@ const API_SIGNUP      = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn
 
   const list = document.getElementById("events");
   list.innerHTML = "";
-  if (!events.length) {
+  if (!events.array.length) {
     list.textContent = "No upcoming events.";
     return;
   }
 
-  for (const ev of events) {
+  for (const ev of events.array) {
     const div = document.createElement("div");
     div.className = "event";
     const isGoing = going.has(ev.id);
     div.innerHTML = `
-      <h3>${ev.name}</h3>
-      <div class="muted">${new Date(ev.starts_at).toLocaleString()} ${ev.location ? "• " + ev.location : ""}</div>
-      <p>${ev.description || ""}</p>
+      <h3>${ev.Name}</h3>
+      <div class="muted">${new Date(ev['Start Time']).toLocaleString()} ${ev.Location ? "• " + ev.Location : ""}</div>
+      <p>${ev.Description || ""}</p>
       <button class="btn" ${isGoing ? "disabled" : ""} data-event="${ev.id}">
         ${isGoing ? "You're attending" : "Attend"}
       </button>

@@ -37,7 +37,7 @@
       div.className = "event";
       div.innerHTML = `
         <h3>${ev.Name}</h3>
-        <div class="muted">${new Date(ev.Date).toLocaleString()} ${ev.Location ? "• " + ev.Location : ""}</div>
+        <div class="muted">${new Date(ev.Date).toLocaleString()} - ${ev['End Time']} ${ev.Location ? "• " + ev.Location : ""}</div>
         <p>${ev.Description || ""}</p>
         <a href="/memberstack-test-repo/account.html?event=${ev.id}" class="btn">View / Register</a>
       `;
