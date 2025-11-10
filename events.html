@@ -22,26 +22,106 @@
 
   <script>
   const API_LIST_EVENTS = "https://hook.us2.make.com/n6to8zarrq34vkmwrs2rkn9y8dklxgwx";
+  const API_MY_REGS     = "https://hook.us2.make.com/wfbbhfsn6q1c2p2uvu91uvjhgbqtvii1";
+  const API_SIGNUP      = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o";
+
+  const waitForMemberstack = () => new Promise(resolve => {
+    const check = () => {
+      if (window.$memberstackDom) {
+        resolve(window.$memberstackDom);
+      } else {
+        setTimeout(check, 100);
+      }
+    };
+    check();
+  });
+
+  const createViewLink = eventId => {
+    const link = document.createElement("a");
+    link.className = "btn";
+    link.href = `/memberstack-test-repo/account.html?event=${encodeURIComponent(eventId)}`;
+    link.textContent = "View";
+    return link;
+  };
 
   (async () => {
-    const res = await fetch(API_LIST_EVENTS);
-    const events = await res.json();
     const list = document.getElementById("events");
-    list.innerHTML = "";
-    if (!events.array.length) {
-      list.textContent = "No upcoming events.";
-      return;
-    }
-    for (const ev of events.array) {
-      const div = document.createElement("div");
-      div.className = "event";
-      div.innerHTML = `
-        <h3>${ev.Name}</h3>
-        <div class="muted">${new Date(ev.Date).toLocaleString()} - ${ev['End Time']} ${ev.Location ? "• " + ev.Location : ""}</div>
-        <p>${ev.Description || ""}</p>
-        <a href="/memberstack-test-repo/account.html?event=${ev.id}" class="btn">View / Register</a>
-      `;
-      list.appendChild(div);
+    list.textContent = "Loading...";
+
+    try {
+      const [ms, eventsData] = await Promise.all([
+        waitForMemberstack(),
+        fetch(API_LIST_EVENTS).then(res => res.json())
+      ]);
+
+      const { data: member } = await ms.getCurrentMember();
+      const memberId = member?.id;
+      let going = new Set();
+
+      if (memberId) {
+        const regsRes = await fetch(API_MY_REGS + "?member_id=" + encodeURIComponent(memberId));
+        const regs = await regsRes.json();
+        going = new Set((regs.registrations || []).map(r => r.event_id));
+      }
+
+      const events = eventsData.array || [];
+      list.innerHTML = "";
+
+      if (!events.length) {
+        list.textContent = "No upcoming events.";
+        return;
+      }
+
+      for (const ev of events) {
+        const div = document.createElement("div");
+        div.className = "event";
+        div.innerHTML = `
+          <h3>${ev.Name}</h3>
+          <div class="muted">${new Date(ev.Date).toLocaleString()} - ${ev['End Time']} ${ev.Location ? "• " + ev.Location : ""}</div>
+          <p>${ev.Description || ""}</p>
+        `;
+
+        if (memberId && going.has(ev.id)) {
+          div.appendChild(createViewLink(ev.id));
+        } else {
+          const btn = document.createElement("button");
+          btn.className = "btn";
+          btn.type = "button";
+          btn.textContent = "Register";
+          btn.addEventListener("click", async () => {
+            if (!memberId) {
+              window.location.href = "/memberstack-test-repo/login.html";
+              return;
+            }
+            btn.disabled = true;
+            btn.textContent = "Registering...";
+            try {
+              const res = await fetch(API_SIGNUP, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ member_id: memberId, event_id: ev.id, status: "going" })
+              });
+              const data = await res.json();
+              if (res.ok && !data.error) {
+                btn.replaceWith(createViewLink(ev.id));
+              } else {
+                throw new Error(data.error || res.statusText);
+              }
+            } catch (error) {
+              console.error("Error registering", error);
+              alert("Could not register. Please try again.");
+              btn.disabled = false;
+              btn.textContent = "Register";
+            }
+          });
+          div.appendChild(btn);
+        }
+
+        list.appendChild(div);
+      }
+    } catch (error) {
+      console.error("Error loading events", error);
+      list.textContent = "Unable to load events right now.";
     }
   })();
   </script>

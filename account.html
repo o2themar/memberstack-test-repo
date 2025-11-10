@@ -80,7 +80,7 @@ const API_SIGNUP      = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn
     const isGoing = going.has(ev.id);
     div.innerHTML = `
       <h3>${ev.Name}</h3>
-      <div class="muted">${new Date(ev['Start Time']).toLocaleString()} ${ev.Location ? "• " + ev.Location : ""}</div>
+      <div class="muted">${new Date(ev.Date).toLocaleString()} ${ev.Location ? "• " + ev.Location : ""}</div>
       <p>${ev.Description || ""}</p>
       <button class="btn" ${isGoing ? "disabled" : ""} data-event="${ev.id}">
         ${isGoing ? "You're attending" : "Attend"}
