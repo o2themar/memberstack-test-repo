@@ -99,7 +99,7 @@
               const res = await fetch(API_SIGNUP, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ member_id: memberId, event_id: ev.id, status: "going" })
+                body: JSON.stringify({ member_id: memberId, event_id: ev.id, status: "Confirmed" })
               });
               const data = await res.json();
               if (res.ok && !data.error) {
