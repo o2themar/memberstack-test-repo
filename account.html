@@ -89,9 +89,9 @@ const API_SIGNUP  = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o"
       item.style.borderRadius = "8px";
       item.style.padding = "12px";
       item.style.margin = "8px 0";
-      const status = reg.status || "Registered";
-      const eventId = reg.event_id || "Unknown event";
-      const note = reg.event_name ? `<div><strong>Name:</strong> ${reg.event_name}</div>` : "";
+      const status = reg.Status;
+      const eventId = reg['Event Id'] || "Unknown event";
+      const note = reg.Name ? `<div><strong>Name:</strong> ${reg.Name}</div>` : "";
       item.innerHTML = `
         ${note}
         <div><strong>Event ID:</strong> ${eventId}</div>
