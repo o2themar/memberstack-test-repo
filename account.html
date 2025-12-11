@@ -20,19 +20,6 @@
     <button id="viewEventsBtn" style="padding:8px 16px;border-radius:6px;border:1px solid #ccc;background:#f5f5f5;cursor:pointer;">Browse upcoming events</button>
   </div>
 
-  <div id="quickSignup" style="border:1px solid #ddd;padding:16px;border-radius:8px;">
-    <h3 style="margin-top:0;">Quick registration</h3>
-    <p style="margin-top:0;">Already know the event ID? Enter it below to register instantly.</p>
-    <form id="quickSignupForm">
-      <label>
-        Event ID<br>
-        <input type="text" name="eventId" required style="width:100%;padding:8px;margin:8px 0;">
-      </label>
-      <button type="submit" style="padding:8px 16px;border:none;border-radius:6px;background:#2b7cff;color:#fff;cursor:pointer;">Register</button>
-      <div id="quickSignupMessage" style="margin-top:8px;color:#666;"></div>
-    </form>
-  </div>
-
  <script>
 const API_MY_REGS = "https://hook.us2.make.com/wfbbhfsn6q1c2p2uvu91uvjhgbqtvii1";
 const API_SIGNUP  = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o";
@@ -90,11 +77,13 @@ const API_SIGNUP  = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o"
       item.style.padding = "12px";
       item.style.margin = "8px 0";
       const status = reg.Status;
-      const eventId = reg['Event Id'] || "Unknown event";
+      const date = reg.Date;
+      const startTime = reg['Start Time'];
       const note = reg.Name ? `<div><strong>Name:</strong> ${reg.Name}</div>` : "";
       item.innerHTML = `
         ${note}
-        <div><strong>Event ID:</strong> ${eventId}</div>
+        <div><strong>Date:</strong> ${date}</div>
+        <div><strong>Start Time:</strong> ${startTime}</div>
         <div><strong>Status:</strong> ${status}</div>
       `;
       list.appendChild(item);
@@ -121,40 +110,6 @@ const API_SIGNUP  = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o"
 
   document.getElementById("viewEventsBtn").addEventListener("click", () => {
     window.location.href = "/memberstack-test-repo/events.html";
-  });
-
-  const form = document.getElementById("quickSignupForm");
-  const messageEl = document.getElementById("quickSignupMessage");
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    const eventId = (formData.get("eventId") || "").trim();
-    if (!eventId) {
-      messageEl.textContent = "Please enter a valid event ID.";
-      return;
-    }
-    messageEl.style.color = "#666";
-    messageEl.textContent = "Registering...";
-    try {
-      const res = await fetch(API_SIGNUP, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ member_id: memberId, event_id: eventId, status: "going" })
-      });
-      const j = await res.json();
-      if (res.ok && !j.error) {
-        messageEl.style.color = "#1a7f37";
-        messageEl.textContent = "Registration successful!";
-        form.reset();
-        await refreshRegistrations();
-      } else {
-        throw new Error(j.error || res.statusText);
-      }
-    } catch (error) {
-      messageEl.style.color = "#b3261e";
-      messageEl.textContent = "Unable to register for that event. Please try again.";
-      console.error(error);
-    }
   });
 })();
 </script>
