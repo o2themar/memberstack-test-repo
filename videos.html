@@ -380,6 +380,7 @@
   const PLAN_NAME = "Thabaat Family";
   const ACCOUNT_URL = "/memberstack-test-repo/account.html";
   const LOGIN_URL = "/memberstack-test-repo/login.html";
+  const DONATION_WEBHOOK = "https://hook.us2.make.com/0gdx9cg13gw9mtlq98nnnjg2cwgc03t8";
 
   const shell = document.querySelector(".page");
   const contentSection = document.getElementById("content");
@@ -421,10 +422,10 @@
     if (e.key === "Escape" && modal && modal.style.display !== "none" && !modal.hidden) closeModal();
   });
 
-  donationForm.addEventListener("submit", e => {
+  donationForm.addEventListener("submit", async e => {
     e.preventDefault();
     donateBtn.disabled = true;
-    donateBtn.textContent = "Redirecting...";
+    donateBtn.textContent = "Submitting...";
 
     try {
       if (!currentMember) {
@@ -439,15 +440,17 @@
         amount: donationAmount
       };
       console.log("Submitting donation with member data", memberData);
-      setTimeout(() => {
-        window.location.href = ACCOUNT_URL;
-      }, 500);
+      await fetch(DONATION_WEBHOOK, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(memberData),
+        keepalive: true
+      });
     } catch (error) {
       console.error("Unable to submit donation", error);
-      donateBtn.disabled = false;
-      donateBtn.textContent = "Start monthly donation";
-      alert("Could not start your donation. Please try again.");
     }
+    donateBtn.textContent = "Redirecting...";
+    window.location.href = ACCOUNT_URL;
   });
 
   (async () => {
