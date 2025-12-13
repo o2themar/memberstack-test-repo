@@ -395,6 +395,7 @@
   const ACCOUNT_URL = "/memberstack-test-repo/account.html";
   const LOGIN_URL = "/memberstack-test-repo/login.html";
 
+  const shell = document.querySelector(".page");
   const contentSection = document.getElementById("content");
   const lockedSection = document.getElementById("locked");
   const modal = document.getElementById("donationModal");
@@ -412,18 +413,23 @@
   };
 
   const toggleModal = show => {
+    if (!modal) return;
     modal.hidden = !show;
+    modal.style.display = show ? "grid" : "none";
+    modal.setAttribute("aria-hidden", show ? "false" : "true");
     document.body.style.overflow = show ? "hidden" : "";
     if (show) modal.querySelector("input")?.focus();
   };
+  const openModal = () => toggleModal(true);
+  const closeModal = () => toggleModal(false);
 
-  document.querySelectorAll("[data-open-donation]").forEach(btn => btn.addEventListener("click", () => toggleModal(true)));
-  document.querySelectorAll("[data-close-modal]").forEach(btn => btn.addEventListener("click", () => toggleModal(false)));
+  document.querySelectorAll("[data-open-donation]").forEach(btn => btn.addEventListener("click", openModal));
+  document.querySelectorAll("[data-close-modal]").forEach(btn => btn.addEventListener("click", closeModal));
   modal?.addEventListener("click", e => {
-    if (e.target === modal) toggleModal(false);
+    if (e.target === modal) closeModal();
   });
   document.addEventListener("keydown", e => {
-    if (e.key === "Escape" && !modal.hidden) toggleModal(false);
+    if (e.key === "Escape" && modal && modal.style.display !== "none" && !modal.hidden) closeModal();
   });
 
   donationForm.addEventListener("submit", e => {
@@ -437,6 +443,7 @@
 
   (async () => {
     try {
+      shell.style.visibility = "hidden";
       const ms = await waitForMemberstack();
       const { data: member } = await ms.getCurrentMember();
       if (!member) {
@@ -451,6 +458,7 @@
         lockedSection.style.display = "";
         contentSection.style.display = "none";
       }
+      shell.style.visibility = "visible";
     } catch (error) {
       console.error("Unable to verify plan", error);
       window.location.href = LOGIN_URL;
