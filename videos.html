@@ -393,6 +393,7 @@
   <script>
   const PLAN_NAME = "Thabaat Family";
   const ACCOUNT_URL = "/memberstack-test-repo/account.html";
+  const LOGIN_URL = "/memberstack-test-repo/login.html";
 
   const contentSection = document.getElementById("content");
   const lockedSection = document.getElementById("locked");
@@ -412,15 +413,17 @@
 
   const toggleModal = show => {
     modal.hidden = !show;
-    if (show) {
-      modal.querySelector("input")?.focus();
-    }
+    document.body.style.overflow = show ? "hidden" : "";
+    if (show) modal.querySelector("input")?.focus();
   };
 
   document.querySelectorAll("[data-open-donation]").forEach(btn => btn.addEventListener("click", () => toggleModal(true)));
   document.querySelectorAll("[data-close-modal]").forEach(btn => btn.addEventListener("click", () => toggleModal(false)));
   modal?.addEventListener("click", e => {
     if (e.target === modal) toggleModal(false);
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && !modal.hidden) toggleModal(false);
   });
 
   donationForm.addEventListener("submit", e => {
@@ -436,15 +439,21 @@
     try {
       const ms = await waitForMemberstack();
       const { data: member } = await ms.getCurrentMember();
+      if (!member) {
+        window.location.href = LOGIN_URL;
+        return;
+      }
       const allowed = memberHasPlan(member);
       if (allowed) {
         contentSection.style.display = "";
+        lockedSection.style.display = "none";
       } else {
         lockedSection.style.display = "";
+        contentSection.style.display = "none";
       }
     } catch (error) {
       console.error("Unable to verify plan", error);
-      lockedSection.style.display = "";
+      window.location.href = LOGIN_URL;
     }
   })();
   </script>
