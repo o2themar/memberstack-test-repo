@@ -40,7 +40,9 @@ const API_SIGNUP  = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o"
   }
 
   const memberId = member.id;
-  const planName = member.planConnections?.[0]?.plan?.name || "Free plan";
+  const primaryPlan = member.planConnections?.[0];
+  const planType = primaryPlan?.type || "Free plan";
+  const planId = primaryPlan?.planId || "Not on a paid plan";
 
   // 🧾 Show user info
   const accountDiv = document.getElementById("account");
@@ -50,7 +52,8 @@ const API_SIGNUP  = "https://hook.us2.make.com/iel997i7ybghq9e8ju1mcewf538gn55o"
       <p><strong>Email:</strong> ${member.auth.email}</p>
       ${member.name ? `<p><strong>Name:</strong> ${member.name}</p>` : ""}
       <p><strong>Memberstack ID:</strong> ${member.id}</p>
-      <p><strong>Plan:</strong> ${planName}</p>
+      <p><strong>Plan:</strong> ${planType}</p>
+      <p><strong>Plan ID:</strong> ${planId}</p>
       <button id="logoutBtn" style="margin-top:10px;">Log out</button>
     </div>
   `;
