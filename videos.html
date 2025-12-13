@@ -336,11 +336,9 @@
     <section id="locked" class="locked-state" style="display:none;">
       <div class="eyebrow">Restricted</div>
       <h2 style="margin:10px 0 6px;">Join Thabaat Family to watch these videos</h2>
-      <p class="muted">Set up your monthly donation to unlock the member vault. If you already give monthly, log in and we will check your plan.</p>
+      <p class="muted">Set up your monthly donation to unlock the member vault. You're already signed in - once your donation is active you'll have instant access.</p>
       <div class="actions" style="margin-top:12px;">
         <button class="btn btn-primary" data-open-donation>Set up monthly donation</button>
-        <button class="btn" data-ms-modal="login">Already a member? Log in</button>
-        <button class="btn" data-ms-modal="signup">Create account</button>
       </div>
       <ul class="perks">
         <li>Monthly support keeps Thabaat programs running.</li>
@@ -362,16 +360,8 @@
         <button class="btn-icon" type="button" aria-label="Close" data-close-modal>&times;</button>
       </div>
       <h3 style="margin-top:10px;">Set up your Thabaat Family donation</h3>
-      <p class="muted">This is a mock form. Submitting will redirect you to your account page.</p>
+      <p class="muted" id="memberSummary">We'll use your Memberstack account info on file. Submitting will redirect you to your account page.</p>
       <form id="donationForm">
-        <div class="field">
-          <label for="donation-name">Full name</label>
-          <input id="donation-name" name="name" type="text" required placeholder="e.g., Layla Hasan">
-        </div>
-        <div class="field">
-          <label for="donation-email">Email</label>
-          <input id="donation-email" name="email" type="email" required placeholder="you@example.com" autocomplete="email">
-        </div>
         <div class="field">
           <label for="donation-amount">Monthly amount</label>
           <select id="donation-amount" name="amount" required>
@@ -379,10 +369,6 @@
             <option value="50">$50 / month</option>
             <option value="100">$100 / month</option>
           </select>
-        </div>
-        <div class="field">
-          <label for="donation-note">Note (optional)</label>
-          <input id="donation-note" name="note" type="text" placeholder="Add a short note">
         </div>
         <button class="btn btn-primary" type="submit" id="donateBtn">Start monthly donation</button>
         <p class="muted" style="margin-top:10px;">No real charge is made in this demo. We will send you to your account after submit.</p>
@@ -401,6 +387,9 @@
   const modal = document.getElementById("donationModal");
   const donationForm = document.getElementById("donationForm");
   const donateBtn = document.getElementById("donateBtn");
+  const donationAmountField = document.getElementById("donation-amount");
+  const memberSummary = document.getElementById("memberSummary");
+  let currentMember = null;
 
   const waitForMemberstack = () => new Promise(resolve => {
     const check = () => window.$memberstackDom ? resolve(window.$memberstackDom) : setTimeout(check, 100);
@@ -418,7 +407,7 @@
     modal.style.display = show ? "grid" : "none";
     modal.setAttribute("aria-hidden", show ? "false" : "true");
     document.body.style.overflow = show ? "hidden" : "";
-    if (show) modal.querySelector("input")?.focus();
+    if (show) modal.querySelector("select, input")?.focus();
   };
   const openModal = () => toggleModal(true);
   const closeModal = () => toggleModal(false);
@@ -436,9 +425,29 @@
     e.preventDefault();
     donateBtn.disabled = true;
     donateBtn.textContent = "Redirecting...";
-    setTimeout(() => {
-      window.location.href = ACCOUNT_URL;
-    }, 500);
+
+    try {
+      if (!currentMember) {
+        window.location.href = LOGIN_URL;
+        return;
+      }
+      const donationAmount = donationAmountField?.value || "25";
+      const memberData = {
+        memberId: currentMember.id,
+        email: currentMember.auth?.email || "",
+        name: currentMember.name || "",
+        amount: donationAmount
+      };
+      console.log("Submitting donation with member data", memberData);
+      setTimeout(() => {
+        window.location.href = ACCOUNT_URL;
+      }, 500);
+    } catch (error) {
+      console.error("Unable to submit donation", error);
+      donateBtn.disabled = false;
+      donateBtn.textContent = "Start monthly donation";
+      alert("Could not start your donation. Please try again.");
+    }
   });
 
   (async () => {
@@ -446,6 +455,7 @@
       shell.style.visibility = "hidden";
       const ms = await waitForMemberstack();
       const { data: member } = await ms.getCurrentMember();
+      currentMember = member;
       if (!member) {
         window.location.href = LOGIN_URL;
         return;
@@ -457,6 +467,10 @@
       } else {
         lockedSection.style.display = "";
         contentSection.style.display = "none";
+      }
+      if (memberSummary) {
+        const email = member?.auth?.email ? ` ${member.auth.email}` : "";
+        memberSummary.textContent = `Signed in${email ? " as " + email : ""}. We'll use your Memberstack account details when you start your donation.`;
       }
       shell.style.visibility = "visible";
     } catch (error) {
