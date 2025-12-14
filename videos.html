@@ -391,15 +391,29 @@
   const donationAmountField = document.getElementById("donation-amount");
   const memberSummary = document.getElementById("memberSummary");
   let currentMember = null;
+  let hasAccess = false;
 
   const waitForMemberstack = () => new Promise(resolve => {
     const check = () => window.$memberstackDom ? resolve(window.$memberstackDom) : setTimeout(check, 100);
     check();
   });
 
-  const memberHasPlan = member => {
+  const normalizePlanName = name => (name || "").trim().toLowerCase();
+
+  const memberHasPlan = async (member, ms) => {
     if (!member?.planConnections) return false;
-    return member.planConnections.some(conn => (conn.plan?.name || "").toLowerCase() === PLAN_NAME.toLowerCase());
+    for (const conn of member.planConnections) {
+      const planId = conn.planId;
+      if (!planId) continue;
+      try {
+        const { data: plan } = await ms.getPlan({ planId });
+        const planName = plan?.data?.name || plan?.data?.planName || plan?.name || conn.plan?.name || conn.planName;
+        if (normalizePlanName(planName) === normalizePlanName(PLAN_NAME)) return true;
+      } catch (error) {
+        console.error("Unable to load plan details", planId, error);
+      }
+    }
+    return false;
   };
 
   const toggleModal = show => {
@@ -410,7 +424,10 @@
     document.body.style.overflow = show ? "hidden" : "";
     if (show) modal.querySelector("select, input")?.focus();
   };
-  const openModal = () => toggleModal(true);
+  const openModal = () => {
+    if (hasAccess) return;
+    toggleModal(true);
+  };
   const closeModal = () => toggleModal(false);
 
   document.querySelectorAll("[data-open-donation]").forEach(btn => btn.addEventListener("click", openModal));
@@ -463,10 +480,11 @@
         window.location.href = LOGIN_URL;
         return;
       }
-      const allowed = memberHasPlan(member);
-      if (allowed) {
+      hasAccess = await memberHasPlan(member, ms);
+      if (hasAccess) {
         contentSection.style.display = "";
         lockedSection.style.display = "none";
+        closeModal();
       } else {
         lockedSection.style.display = "";
         contentSection.style.display = "none";
